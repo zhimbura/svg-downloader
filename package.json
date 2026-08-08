@@ -1,0 +1,20 @@
+{
+  "name": "svg-downloadr",
+  "version": "1.0.0",
+  "description": "Chrome-расширение: прокручивает страницу, собирает <img> с SVG и сохраняет их в PDF",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build && vite build --config vite.content.config.js",
+    "dev": "npm run build -- --watch"
+  },
+  "dependencies": {
+    "jspdf": "^4.2.1",
+    "svg2pdf.js": "^2.7.0",
+    "vue": "^3.5.41"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.8",
+    "vite": "^8.2.1"
+  }
+}

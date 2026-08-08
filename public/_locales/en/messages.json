@@ -1,0 +1,11 @@
+{
+  "appName": {
+    "message": "SVG Downloadr"
+  },
+  "appDescription": {
+    "message": "Scrolls the page, collects every <img> whose src is an SVG and saves them as a single PDF."
+  },
+  "actionTitle": {
+    "message": "SVG → PDF"
+  }
+}

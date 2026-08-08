@@ -1,0 +1,11 @@
+{
+  "appName": {
+    "message": "SVG Downloadr"
+  },
+  "appDescription": {
+    "message": "Прокручивает страницу, собирает все <img> с SVG и сохраняет найденное одним PDF."
+  },
+  "actionTitle": {
+    "message": "SVG → PDF"
+  }
+}
