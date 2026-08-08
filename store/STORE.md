@@ -145,6 +145,15 @@ Open source.
 
 ---
 
+## Ссылки для формы
+
+| Поле | Значение |
+|---|---|
+| Политика конфиденциальности (обязательно) | `https://github.com/zhimbura/svg-downloader/blob/main/PRIVACY.md` |
+| Условия использования | `https://github.com/zhimbura/svg-downloader/blob/main/TERMS.md` |
+| Домашняя страница | `https://github.com/zhimbura/svg-downloader` |
+| Поддержка | `https://github.com/zhimbura/svg-downloader/issues` |
+
 ## Раздел «Практики конфиденциальности»
 
 **Единственное назначение (single purpose):**

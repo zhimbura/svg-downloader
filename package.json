@@ -4,6 +4,12 @@
   "description": "Chrome-расширение: прокручивает страницу, собирает <img> с SVG и сохраняет их в PDF",
   "private": true,
   "type": "module",
+  "license": "MIT",
+  "author": "Tikhon Ustinov",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhimbura/svg-downloader.git"
+  },
   "scripts": {
     "build": "vite build && vite build --config vite.content.config.js",
     "dev": "npm run build -- --watch"
