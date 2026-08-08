@@ -154,23 +154,97 @@ Open source.
 | Домашняя страница | `https://github.com/zhimbura/svg-downloader` |
 | Поддержка | `https://github.com/zhimbura/svg-downloader/issues` |
 
-## Раздел «Практики конфиденциальности»
+## Раздел «Конфиденциальность» в консоли разработчика
 
-**Единственное назначение (single purpose):**
+Тексты ниже готовы к вставке: каждый укладывается в лимит поля (1000 символов).
 
-RU: `Расширение находит на открытой странице изображения в формате SVG и сохраняет выбранные из них в один PDF-файл.`
+### Единственное назначение → «Описание цели»
 
-EN: `The extension finds SVG images on the current page and saves the selected ones into a single PDF file.`
+```
+SVG Downloadr решает одну задачу: находит на веб-странице, открытой пользователем, изображения в формате SVG, вставленные тегом <img>, и сохраняет выбранные пользователем изображения в один PDF-файл.
 
-**Обоснование разрешений:**
+Полный сценарий работы: пользователь нажимает на иконку расширения и кнопку «Сканировать страницу» → расширение прокручивает активную вкладку сверху донизу и собирает адреса SVG-изображений, включая те, что подгружаются лениво при прокрутке → пользователь снимает отметки с ненужных → расширение загружает отмеченные файлы и собирает из них PDF, который сохраняется на устройство пользователя.
 
-| Разрешение | Формулировка для формы |
-|---|---|
-| `activeTab` | Нужен доступ к активной вкладке в момент, когда пользователь нажал кнопку сканирования. |
-| `scripting` | Скрипт сканирования внедряется в текущую вкладку по действию пользователя, чтобы прокрутить страницу и собрать адреса SVG-изображений. |
-| `storage` | Хранятся только выбранный язык интерфейса и результат последнего сканирования; данные не покидают браузер. |
-| Доступ ко всем сайтам (`host_permissions`) | Пользователь может запустить сканирование на любом сайте, поэтому заранее ограничить список доменов нельзя. Разрешение используется для чтения SVG-файлов той страницы, которую пользователь сам открыл и просканировал. |
-| Удалённый код | Не используется: все зависимости (Vue, jsPDF, svg2pdf.js) собраны в пакет расширения. |
+Других функций у расширения нет. Оно не изменяет содержимое страниц, не работает в фоне, не показывает рекламу, не собирает аналитику, не передаёт данные на серверы и не загружает удалённый код: все библиотеки включены в пакет расширения.
+```
 
-**Сбор данных:** расширение не собирает и не передаёт никакие пользовательские данные —
-в декларации отмечаются все пункты «не собирается».
+### Обоснование (activeTab)
+
+```
+activeTab нужен, чтобы обратиться к вкладке, на которой пользователь явно запустил сканирование, нажав кнопку в попапе расширения.
+
+По этому нажатию расширение получает адрес активной вкладки — чтобы проверить, что страница вообще поддерживается (http/https/file), и подставить имя сайта в название готового PDF-файла, — а затем внедряет в эту вкладку скрипт сканирования.
+
+Без activeTab невозможно определить, к какой вкладке относится нажатие кнопки, и запустить на ней поиск SVG-изображений.
+
+Доступ ограничен вкладкой, которую пользователь открыл сам, и возникает только в ответ на его действие. В фоне расширение вкладки не читает и никаких данных о них не сохраняет и не передаёт.
+```
+
+### Обоснование (scripting)
+
+```
+scripting используется для внедрения скрипта сканирования (content.js) в активную вкладку через chrome.scripting.executeScript — только после того, как пользователь нажал кнопку «Сканировать страницу».
+
+Скрипт выполняет одну задачу: прокручивает страницу сверху донизу, чтобы подгрузились ленивые изображения, собирает адреса элементов <img>, у которых src ведёт на SVG, возвращает этот список в попап и возвращает прокрутку на исходную позицию.
+
+Скрипт не изменяет содержимое страницы, не внедряет в неё разметку и не выполняет удалённый код — он входит в пакет расширения и собран вместе с ним.
+
+Постоянно зарегистрированных content scripts у расширения нет: внедрение происходит только по действию пользователя и только в одну вкладку.
+```
+
+### Обоснование (storage)
+
+```
+storage хранит на устройстве пользователя две вещи, обе — только для удобства работы:
+
+1. Выбранный язык интерфейса (значение «ru» или «en») в chrome.storage.local, чтобы выбор сохранялся между запусками попапа.
+
+2. Результат последнего сканирования — список адресов найденных SVG-изображений для текущей вкладки — в chrome.storage.session, чтобы список не пропадал, когда попап закрывается (а он закрывается при каждом клике вне окна). Эти данные автоматически удаляются при закрытии браузера.
+
+Персональные данные не сохраняются. Синхронизация (chrome.storage.sync) не используется, данные не покидают устройство и никуда не передаются.
+```
+
+### Обоснование доступа к хостам (`<all_urls>`)
+
+```
+Расширение работает с той страницей, которую пользователь открыл сам, и заранее список сайтов неизвестен: SVG-иконки, логотипы и иллюстрации встречаются на любых сайтах, поэтому ограничить разрешение конкретными доменами невозможно.
+
+Доступ используется для двух операций и только после нажатия кнопки «Сканировать страницу»:
+1. Внедрить скрипт сканирования в активную вкладку, чтобы найти на ней <img> с SVG.
+2. Загрузить по HTTP(S) сами SVG-файлы по найденным на этой странице адресам — их содержимое нужно, чтобы собрать из них PDF.
+
+Сетевые запросы идут только к тому сайту, который пользователь просканировал. Расширение не работает в фоне, не читает другие вкладки, не собирает историю и не передаёт содержимое страниц третьим лицам.
+```
+
+### Использование удалённого кода
+
+Вариант: **«Нет, я не использую удалённый код»**.
+
+```
+Все зависимости (Vue, jsPDF, svg2pdf.js) собраны в пакет расширения сборщиком Vite. Расширение не загружает и не выполняет код из сети, не использует eval и внешние CDN.
+```
+
+### Декларация сбора данных
+
+Расширение не собирает ни одну из перечисляемых категорий — все пункты остаются
+неотмеченными. Три обязательные галочки-подтверждения внизу («не продаю данные третьим
+лицам», «использую данные только для заявленной цели», «не использую данные для оценки
+кредитоспособности и кредитования») — отмечаются.
+
+### Ссылка на политику конфиденциальности
+
+`https://github.com/zhimbura/svg-downloader/blob/main/PRIVACY.md`
+
+---
+
+## Английские версии (для локализованной витрины)
+
+**Single purpose:** `SVG Downloadr does one thing: it finds SVG images embedded via <img> on the page the user opened, and saves the ones the user selects into a single PDF file. The user presses the extension icon and "Scan page"; the extension scrolls the active tab from top to bottom, collects the SVG URLs including lazy-loaded ones, and builds a PDF from the selected files. It does not modify pages, run in the background, collect analytics, send data to servers or load remote code.`
+
+**activeTab:** `activeTab is needed to reach the tab where the user explicitly started the scan by pressing the button in the extension popup. The extension reads the active tab's URL to check that the page is supported and to name the resulting PDF, then injects the scanning script into that tab. Access is limited to the tab the user opened and happens only in response to their action.`
+
+**scripting:** `scripting is used to inject the scanning script into the active tab via chrome.scripting.executeScript, only after the user presses "Scan page". The script scrolls the page so lazy images load, collects the URLs of <img> elements whose src points to an SVG, returns the list to the popup and restores the scroll position. It does not modify page content and contains no remote code — it ships inside the extension package.`
+
+**storage:** `storage keeps two things locally: the chosen interface language ("ru" or "en") in chrome.storage.local so the choice survives popup restarts, and the last scan result for the current tab in chrome.storage.session so the list is not lost when the popup closes. Session data is cleared when the browser closes. No personal data is stored, chrome.storage.sync is not used, and nothing leaves the device.`
+
+**Host permissions:** `The extension works on whichever page the user opens, and the list of sites cannot be known in advance — SVG icons and logos appear on any website. The access is used only after the user presses the scan button, for two operations: injecting the scanning script into the active tab, and downloading over HTTP(S) the SVG files found on that page so they can be placed into the PDF. Requests go only to the site the user scanned. The extension does not run in the background, does not read other tabs and shares nothing with third parties.`
